@@ -22,6 +22,11 @@ int main()
         hc[i] = (5*hc[i-1] + 47) % 753;
     }
 
+#ifdef DEBUG
+    for (int i = 0; i < M; i++) {
+        hc[i] = ha[i] + hb[i];
+    }
+#else
     cudaMalloc((void**) &da, N*sizeof(int));
     cudaMalloc((void**) &db, N*sizeof(int));
     cudaMalloc((void**) &dc, N*sizeof(int));
@@ -40,4 +45,6 @@ int main()
     cudaFree(da);
     cudaFree(db);
     cudaFree(dc);
+#endif
+    return 0;
 }
