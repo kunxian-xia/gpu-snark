@@ -5,7 +5,7 @@ __global__ void add(int *pa, int *pb, int *pc)
 {
     int tid = blockIdx.x;
     if (tid < N) 
-        c[tid] = a[tid] + b[tid];
+        pc[tid] = pa[tid] + pb[tid];
 }
 
 int main()
@@ -27,13 +27,13 @@ int main()
     cudaMalloc((void**) &dc, N*sizeof(int));
 
     for (int i = 0; i < M/N; i++) {
-        cudaMemcpy(da, a+i*N, N*sizeof(int), cudaMemcpyHostToDevice);
-        cudaMemcpy(db, b+i*N, N*sizeof(int), cudaMemcpyHostToDevice);
-        cudaMemcpy(dc, c+i*N, N*sizeof(int), cudaMemcpyHostToDevice);
+        cudaMemcpy(da, ha+i*N, N*sizeof(int), cudaMemcpyHostToDevice);
+        cudaMemcpy(db, hb+i*N, N*sizeof(int), cudaMemcpyHostToDevice);
+        cudaMemcpy(dc, hc+i*N, N*sizeof(int), cudaMemcpyHostToDevice);
 
         add<<<N, 1>>>(da, db, dc);
 
-        cudaMemcpy(c+i*N, dc, N*sizeof(int), cudaMemcpyDeviceToHost);
+        cudaMemcpy(hc+i*N, dc, N*sizeof(int), cudaMemcpyDeviceToHost);
         // for (int j = 0; j < N; )
     }
     // cudaMemcpy();
