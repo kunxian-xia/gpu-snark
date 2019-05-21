@@ -1,0 +1,3 @@
+[submodule "snark-challenge-cuda-starter"]
+	path = snark-challenge-cuda-starter
+	url = https://github.com/CodaProtocol/snark-challenge-cuda-starter
