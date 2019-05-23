@@ -75,10 +75,19 @@
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Include>C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt;%(Include)</Include>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <CudaCompile Include="fixnum\internal\primitives.cu" />
+    <CudaCompile Include="fixnum\slot_layout.cu" />
+    <CudaCompile Include="fixnum\warp_fixnum.cu" />
+    <CudaCompile Include="fixnum\word_fixnum.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="main.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
