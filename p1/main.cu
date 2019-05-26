@@ -128,6 +128,7 @@ int main(int argc, char* argv[])
         // step 2. run Kernel computation
         while (n > 1) {
             multiply_together_mod<<<(n+15)/16, 256>>>(mnt4, mnt6, n, pmnt4_inputs, pmnt6_inputs, pmnt4_output, pmnt6_output);
+            cuda_device_synchronize();
             n >>= 1;
         }
         
