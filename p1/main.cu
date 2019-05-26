@@ -22,16 +22,27 @@ typedef modnum_monty::modnum modnum;
 // which is little-endian 
 
 __global__
-void multiply_together_mod(fixnum *mnt4, fixnum *mnt6, int n,
+void multiply_together_mod(fixnum *mnt4, fixnum *mnt6, int n
     fixnum *pmnt4_inputs, fixnum *pmnt6_inputs,
     fixnum *pmnt4_output, fixnum *pmnt6_output) 
 {
+    int odd = n & 1;
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    int ele_idx = idx / fixnum::layout::WIDTH;
+    int warp_idx = idx / fixnum::layout::WIDTH;
 
     int laneIdx = fixnum::layout::laneIdx();
     modnum_monty fmnt4753(mnt4[laneIdx]);
+    modnum_monty fmnt6753(mnt6[laneIdx]);
 
+    modnum z4;
+    modnum z6;
+    if (warp_idx != 0 || odd == 0) {
+        fmnt4753.mul(z4, pmnt4_inputs[warp_idx]， pmnt4_inputs[warp_idx+n/2]);
+        fmnt6753.mul(z6, pmnt6_inputs[warp_idx]， pmnt6_inputs[warp_idx+n/2]);
+        fixnum::set(pmnt4_inputs[warp_idx], fixnum::get(z4, laneIdx), laneIdx);
+        fixnum::set(pmnt6_inputs[warp_idx], fixnum::get(z6, laneIdx), laneIdx);
+    } 
+    
     // modnum mx, my;
     // fixnum x(laneIdx == 0 ? 10 : 0);
     // fixnum y(laneIdx == 0 ? 11 : 0);
@@ -115,18 +126,22 @@ int main(int argc, char* argv[])
         }
 
         // step 2. run Kernel computation
-        multiply_together_mod<<<1, 32>>>(mnt4, mnt6, n, pmnt4_inputs, pmnt6_inputs, pmnt4_output, pmnt6_output);
+        while (n > 1) {
+            multiply_together_mod<<<(n+255)/256, 256>>>(mnt4, mnt6, n, pmnt4_inputs, pmnt6_inputs, pmnt4_output, pmnt6_output);
+            n >> 1;
+        }
+        
 
         // step 3. write outputs into file
         {
             uint8_t tmp[12*8];
-            fixnum::to_bytes(tmp, sizeof(tmp), as_byte_ptr(pmnt4_output));
+            fixnum::to_bytes(tmp, sizeof(tmp), as_byte_ptr(&pmnt4_inputs[0]));
             fwrite(tmp, sizeof(tmp), 1, output);
         }
 
         {
             uint8_t tmp[12*8];
-            fixnum::to_bytes(tmp, sizeof(tmp), as_byte_ptr(pmnt6_output));
+            fixnum::to_bytes(tmp, sizeof(tmp), as_byte_ptr(&pmnt6_inputs[0]));
             fwrite(tmp, sizeof(tmp), 1, output);
         }
 
