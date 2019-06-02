@@ -62,6 +62,7 @@ void process_output(fixnum *mnt, fixnum *output, fixnum *r1)
         modnum z;
         mod.mul(z, output[laneIdx], r1[laneIdx]);
         output[laneIdx] = z;
+	printf("lane %d: %x\n", laneIdx, z);
     }
 }
 
@@ -144,10 +145,11 @@ int main(int argc, char* argv[])
 
     while (true) {
         // step 1. get inputs from file
-        size_t n;
+        size_t n, m;
         size_t elts_read = fread((void *) &n, sizeof(size_t), 1, input);
         if (elts_read == 0) { break; }
 
+	m = n;
         fixnum *pmnt4_inputs = nullptr;
         fixnum *pmnt6_inputs = nullptr;
         // fixnum *pmnt4_output = nullptr;
@@ -160,12 +162,12 @@ int main(int argc, char* argv[])
         for (int i = 0; i < n; i++) {
             uint8_t tmp[12*8];
             fread((void *) tmp, 12*8, 1, input);
-            fixnum::from_bytes(as_byte_ptr(&pmnt4_inputs[i]), tmp, sizeof(tmp));
+            fixnum::from_bytes(as_byte_ptr(&pmnt4_inputs[i*fixnum::layout::WIDTH]), tmp, sizeof(tmp));
         }
         for (int i = 0; i < n; i++) {
             uint8_t tmp[12*8];
             fread((void *) tmp, 12*8, 1, input);
-            fixnum::from_bytes(as_byte_ptr(&pmnt6_inputs[i]), tmp, sizeof(tmp));
+            fixnum::from_bytes(as_byte_ptr(&pmnt6_inputs[i*fixnum::layout::WIDTH]), tmp, sizeof(tmp));
         }
 
         // step 2. preprocess input
@@ -182,7 +184,10 @@ int main(int argc, char* argv[])
 
             multiply_together_mod<<<(n+15)/16, 256>>>(mnt6, n, pmnt6_inputs);
             cuda_device_synchronize();
-            n >>= 1;
+	    if (n & 1 == 1) 
+		    n = (n+1)/2;
+	    else 
+		    n = n/2;
         }
         
         process_output<<<1, 16>>>(mnt4, pmnt4_inputs, r1_mnt4);
@@ -195,6 +200,10 @@ int main(int argc, char* argv[])
             uint8_t tmp[12*8];
             fixnum::to_bytes(tmp, sizeof(tmp), as_byte_ptr(&pmnt4_inputs[0]));
             fwrite(tmp, sizeof(tmp), 1, output);
+	    printf("n = %d\n", m);
+	    for (int i = 0; i < 12; i++) {
+		    printf("%llu\n", pmnt4_inputs[i]);
+	    }
         }
 
         {
