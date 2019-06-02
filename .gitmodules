@@ -1,6 +1,3 @@
 [submodule "snark-challenge-cuda-starter"]
 	path = snark-challenge-cuda-starter
 	url = https://github.com/CodaProtocol/snark-challenge-cuda-starter
-[submodule "cuda-fixnum"]
-	path = cuda-fixnum
-	url = https://github.com/data61/cuda-fixnum
