@@ -39,7 +39,7 @@ void preprocess_input(fixnum *mnt, int n, fixnum *inputs, fixnum *r1inv)
     // = x*R2 (mod p)
     modnum r1invr2;
     modnum r1invr2r2;
-    mod.to_modnum(r1invr2, r1inv);
+    mod.to_modnum(r1invr2, r1inv[laneIdx]);
     mod.to_modnum(r1invr2r2, r1invr2);
 
     if (elem_idx < n) {
