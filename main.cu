@@ -100,7 +100,7 @@ vector<uint8_t> from_big_endian_hex(string hex)
     vector<uint8_t> ret((hex.size() + 1) / 2);
 
     auto ret_iter = ret.begin();
-    for (auto iter = hex.rbegin(); iter != hex.rend();)
+    for (auto iter = hex.rbegin(); iter != hex.rend();iter++)
     {
         *ret_iter = hex_to_int(*iter);
         if (++iter == hex.rend()) 
@@ -132,10 +132,10 @@ int main(int argc, char* argv[])
     assert(argc >= 4);
 
     // step 0. prepare common params: F_mnt4_753.q and F_mnt6_753.q
-    fixnum *mnt4 = fixnum_from_big_endian_hex("1c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db117e776f218059db80f0da5cb537e38685acce9767254a4638810719ac425f0e39d54522cdd119f5e9063de245e8001");
-    fixnum *mnt6 = fixnum_from_big_endian_hex("1c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db26c5c28c859a99b3eebca9429212636b9dff97634993aa4d6c381bc3f0057974ea099170fa13a4fd90776e240000001");
-    fixnum *r1inv_mnt4 = fixnum_from_big_endian_hex("14caaa5fdb8ac881a53812b241540f5dc6228d561dfe748b35daa0c2e19f5868da6ed9b2e9e509a0bb1af313cef75a7424e4de1234c79ee32c031de123cab3188b9ef1b53258fe2e5cebefc11b219acb1cf33b776445b9588038856054e5f");
-    fixnum *r1inv_mnt6 = fixnum_from_big_endian_hex("11e5a97bb2e58e46705d56ce665bc736ea1dccfef54ba2fa4d8056bee5de51b6aacdd0f39ea3d372699b59f04124887cf93e64e9e4fe7c269b1d5e296eb3aeffe67ac22c4cf370041c413fa9c90f53ff36ce86b15f05e8d37cc1acec9ef55");
+    fixnum *mnt4 = fixnum_from_big_endian_hex("01c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db117e776f218059db80f0da5cb537e38685acce9767254a4638810719ac425f0e39d54522cdd119f5e9063de245e8001");
+    fixnum *mnt6 = fixnum_from_big_endian_hex("01c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db26c5c28c859a99b3eebca9429212636b9dff97634993aa4d6c381bc3f0057974ea099170fa13a4fd90776e240000001");
+    fixnum *r1inv_mnt4 = fixnum_from_big_endian_hex("014caaa5fdb8ac881a53812b241540f5dc6228d561dfe748b35daa0c2e19f5868da6ed9b2e9e509a0bb1af313cef75a7424e4de1234c79ee32c031de123cab3188b9ef1b53258fe2e5cebefc11b219acb1cf33b776445b9588038856054e5f");
+    fixnum *r1inv_mnt6 = fixnum_from_big_endian_hex("011e5a97bb2e58e46705d56ce665bc736ea1dccfef54ba2fa4d8056bee5de51b6aacdd0f39ea3d372699b59f04124887cf93e64e9e4fe7c269b1d5e296eb3aeffe67ac22c4cf370041c413fa9c90f53ff36ce86b15f05e8d37cc1acec9ef55");
     fixnum *r1_mnt4 = fixnum_from_big_endian_hex("7b479ec8e24295455fb31ff9a1950fa47edb3865e88c4074c9cbfd8ca621598b4302d2f00a62320c3bb7133385591e0f4d8acf031d68ed269c942108976f79589819c788b60197c3e4a0cd14572e91cd31c65a03468698a8ecabd9dc6f42");
     fixnum *r1_mnt6 = fixnum_from_big_endian_hex("7b479ec8e24295455fb31ff9a1950fa47edb3865e88c4074c9cbfd8ca621598b4302d2f00a62320c3bb7133384989fbca908de0ccb62ab0c4ee6d3e6dad40f725caec549c0daa1ebd2d90c79e1794eb16817b589cea8b99680147fff6f42");
 
@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
 
     while (true) {
         // step 1. get inputs from file
-        int n;
+        size_t n;
         size_t elts_read = fread((void *) &n, sizeof(size_t), 1, input);
         if (elts_read == 0) { break; }
 
