@@ -6,5 +6,5 @@
 *.fatbin
 
 .vscode/*
-./main
-./output
+main
+output
