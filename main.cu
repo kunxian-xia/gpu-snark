@@ -211,11 +211,11 @@ int main(int argc, char* argv[])
 		    reduce_serial<<<1, 16>>>(mnt4, &pmnt4_inputs[0], &pmnt4_inputs[i*fixnum::layout::WIDTH]);
 		    cuda_device_synchronize();
         }
-    #endif
 	    for (int i = 1; i < n; i++) {
 		    reduce_serial<<<1, 16>>>(mnt6, &pmnt6_inputs[0], &pmnt6_inputs[i*fixnum::layout::WIDTH]);
 		    cuda_device_synchronize();
 	    }
+    #endif
         process_output<<<1, 16>>>(mnt4, &pmnt4_inputs[0], r1_mnt4);
         cuda_device_synchronize();
         process_output<<<1, 16>>>(mnt6, &pmnt6_inputs[0], r1_mnt6);
