@@ -79,8 +79,8 @@ void multiply_together_mod(fixnum *mnt, int n, fixnum *inputs)
     if ((elem_idx != 0 || odd == 0) && (elem_idx*2 < n)){
         // inputs[i] *= inputs[i+n/2];
         //int offset = elem_idx*fixnum::layout::WIDTH + laneIdx; // == idx;
-    	modnum z;
-	    int offset = idx;
+        modnum z;
+        int offset = idx;
         int next_offset = (n/2)*fixnum::layout::WIDTH + offset;
 	    //printf("lane %d: %lu\n", laneIdx, inputs[offset]);
         mod.mul(z, inputs[offset], inputs[next_offset]);
