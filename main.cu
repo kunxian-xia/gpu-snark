@@ -45,7 +45,7 @@ void preprocess_input(fixnum *mnt, int n, fixnum *inputs, fixnum *r1inv)
     if (elem_idx < n) {
         modnum z;
         int offset = elem_idx*fixnum::layout::WIDTH + laneIdx;
-	//printf("[print input] fixnum %d: %lu\n", elem_idx, inputs[offset]);
+	    //printf("[print input] fixnum %d: %lu\n", elem_idx, inputs[offset]);
         mod.mul(z, inputs[offset], r1invr2r2);
         inputs[offset] = z;
     }
@@ -63,7 +63,7 @@ void process_output(fixnum *mnt, fixnum *output, fixnum *r1)
         modnum z;
         mod.mul(z, output[laneIdx], r1[laneIdx]);
         output[laneIdx] = z;
-	//printf("[print output] lane %d: %lu\n", laneIdx, z);
+	    //printf("[print output] lane %d: %lu\n", laneIdx, z);
     }
 }
 
@@ -80,9 +80,9 @@ void multiply_together_mod(fixnum *mnt, int n, fixnum *inputs)
         // inputs[i] *= inputs[i+n/2];
         //int offset = elem_idx*fixnum::layout::WIDTH + laneIdx; // == idx;
     	modnum z;
-	int offset = idx;
+	    int offset = idx;
         int next_offset = (n/2)*fixnum::layout::WIDTH + offset;
-	//printf("lane %d: %lu\n", laneIdx, inputs[offset]);
+	    //printf("lane %d: %lu\n", laneIdx, inputs[offset]);
         mod.mul(z, inputs[offset], inputs[next_offset]);
         inputs[offset] = z;
     } 
@@ -93,9 +93,9 @@ void reduce_serial(fixnum *mnt, fixnum *prod, fixnum *input)
 {
     int laneIdx = fixnum::layout::laneIdx();
     modnum_monty mod(mnt[laneIdx]);
-     modnum z;
+    modnum z;
     mod.mul(z, prod[laneIdx], input[laneIdx]);
-     prod[laneIdx] = z;
+    prod[laneIdx] = z;
 }
 
 
@@ -190,6 +190,8 @@ int main(int argc, char* argv[])
         cuda_device_synchronize();
         
         // step 3. run Kernel computation
+    #ifdef REDUCE_GPU
+        printf("running in gpu accelerate mode\n");
         while (n > 1) {
             multiply_together_mod<<<(n+15)/16, 256>>>(mnt4, n, pmnt4_inputs);
             cuda_device_synchronize();
@@ -197,23 +199,23 @@ int main(int argc, char* argv[])
             multiply_together_mod<<<(n+15)/16, 256>>>(mnt6, n, pmnt6_inputs);
             cuda_device_synchronize();
 
-	    if (n & 1 == 1) {
-		    n = (n+1)/2;
-	    }
-	    else {
-		    n = n/2;
-	    }
+	        if (n & 1 == 1) {
+		        n = (n+1)/2;
+	        }
+	        else {
+		        n = n/2;
+	        }
         }
-       /* 
-	for (int i = 1; i < n; i++) {
-		reduce_serial<<<1, 16>>>(mnt4, &pmnt4_inputs[0], &pmnt4_inputs[i*fixnum::layout::WIDTH]);
-		cuda_device_synchronize();
-	}
-	for (int i = 1; i < n; i++) {
-		reduce_serial<<<1, 16>>>(mnt6, &pmnt6_inputs[0], &pmnt6_inputs[i*fixnum::layout::WIDTH]);
-		cuda_device_synchronize();
-	}
-	*/
+    #else
+	    for (int i = 1; i < n; i++) {
+		    reduce_serial<<<1, 16>>>(mnt4, &pmnt4_inputs[0], &pmnt4_inputs[i*fixnum::layout::WIDTH]);
+		    cuda_device_synchronize();
+        }
+    #endif
+	    for (int i = 1; i < n; i++) {
+		    reduce_serial<<<1, 16>>>(mnt6, &pmnt6_inputs[0], &pmnt6_inputs[i*fixnum::layout::WIDTH]);
+		    cuda_device_synchronize();
+	    }
         process_output<<<1, 16>>>(mnt4, &pmnt4_inputs[0], r1_mnt4);
         cuda_device_synchronize();
         process_output<<<1, 16>>>(mnt6, &pmnt6_inputs[0], r1_mnt6);
@@ -224,10 +226,10 @@ int main(int argc, char* argv[])
             uint8_t tmp[12*8];
             fixnum::to_bytes(tmp, sizeof(tmp), as_byte_ptr(&pmnt4_inputs[0]));
             fwrite(tmp, sizeof(tmp), 1, output);
-	    //printf("n = %lu\n", m);
-	    for (int i = 0; i < 12; i++) {
-	//	    printf("%lu\n", pmnt4_inputs[i]);
-	    }
+	        // printf("n = %lu\n", m);
+	        // for (int i = 0; i < 12; i++) {
+	        //     printf("%lu\n", pmnt4_inputs[i]);
+	        // }
         }
 
         {
